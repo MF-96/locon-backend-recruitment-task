@@ -10,7 +10,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Setter
 @Getter
-public class Book {
+public class BookEntity {
 
   @Id
   @Column(name = "ID")
