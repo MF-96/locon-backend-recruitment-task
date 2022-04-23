@@ -132,7 +132,7 @@ public class BookControllerTest {
   }
 
   @Test
-  public void testAddBookJsonResponse() throws Exception {
+  public void testAddBookJson() throws Exception {
     Book book = new Book("1", "TITLE 1", "AUTHOR 1");
     when(bookService.addBook(any(Book.class))).thenReturn(book);
 
@@ -148,7 +148,7 @@ public class BookControllerTest {
   }
 
   @Test
-  public void testAddBookXmlResponse() throws Exception {
+  public void testAddBookXml() throws Exception {
     Book book = new Book("1", "TITLE 1", "AUTHOR 1");
     when(bookService.addBook(any(Book.class))).thenReturn(book);
 
@@ -184,6 +184,83 @@ public class BookControllerTest {
     when(bookService.addBook(any(Book.class))).thenThrow(new InvalidInputException());
 
     mockMvc.perform(MockMvcRequestBuilders.post("/bookstore-web/book")
+                    .content(objectMapper.writeValueAsString(book))
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isUnprocessableEntity())
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidInputException))
+            .andExpect(result -> assertEquals(Objects.requireNonNull(result.getResolvedException()).getMessage(), "Invalid input"));
+  }
+
+  @Test
+  public void testUpdateBookJson() throws Exception {
+    Book book = new Book("1", "NEW TITLE", "NEW AUTHOR");
+    when(bookService.updateBook(any(Book.class))).thenReturn(book);
+
+    mockMvc.perform(MockMvcRequestBuilders.put("/bookstore-web/book")
+                    .content(objectMapper.writeValueAsString(book))
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.id").value("1"))
+            .andExpect(jsonPath("$.title").value("NEW TITLE"))
+            .andExpect(jsonPath("$.author").value("NEW AUTHOR"));
+  }
+
+  @Test
+  public void testUpdateBookXml() throws Exception {
+    Book book = new Book("1", "NEW TITLE", "NEW AUTHOR");
+    when(bookService.updateBook(any(Book.class))).thenReturn(book);
+
+    mockMvc.perform(MockMvcRequestBuilders.put("/bookstore-web/book")
+                    .content(xmlMapper.getObjectMapper().writeValueAsString(book))
+                    .contentType(MediaType.APPLICATION_XML_VALUE)
+                    .accept(MediaType.APPLICATION_XML_VALUE))
+            .andDo(print())
+            .andExpect(status().isCreated())
+            .andExpect(xpath("//Book/id").string("1"))
+            .andExpect(xpath("//Book/title").string("NEW TITLE"))
+            .andExpect(xpath("//Book/author").string("NEW AUTHOR"));
+  }
+
+  @Test
+  public void testUpdateBookNotFound() throws Exception {
+    Book book = new Book("9999", "NEW TITLE", "NEW AUTHOR");
+    when(bookService.updateBook(any(Book.class))).thenThrow(new EntityNotFoundException("Book not found"));
+
+    mockMvc.perform(MockMvcRequestBuilders.put("/bookstore-web/book")
+                    .content(objectMapper.writeValueAsString(book))
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isNotFound())
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof EntityNotFoundException))
+            .andExpect(result -> assertEquals(Objects.requireNonNull(result.getResolvedException()).getMessage(), "Book not found"));
+  }
+
+  @Test
+  public void testUpdateBookEmptyTitle() throws Exception {
+    Book book = new Book("1", "", "NEW AUTHOR");
+    when(bookService.updateBook(any(Book.class))).thenThrow(new InvalidInputException());
+
+    mockMvc.perform(MockMvcRequestBuilders.put("/bookstore-web/book")
+                    .content(objectMapper.writeValueAsString(book))
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isUnprocessableEntity())
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidInputException))
+            .andExpect(result -> assertEquals(Objects.requireNonNull(result.getResolvedException()).getMessage(), "Invalid input"));
+  }
+
+  @Test
+  public void testUpdateBookEmptyAuthor() throws Exception {
+    Book book = new Book("1", "NEW TITLE", "");
+    when(bookService.updateBook(any(Book.class))).thenThrow(new InvalidInputException());
+
+    mockMvc.perform(MockMvcRequestBuilders.put("/bookstore-web/book")
                     .content(objectMapper.writeValueAsString(book))
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .accept(MediaType.APPLICATION_JSON_VALUE))

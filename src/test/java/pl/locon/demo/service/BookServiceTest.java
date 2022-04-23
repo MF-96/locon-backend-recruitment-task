@@ -11,8 +11,10 @@ import pl.locon.demo.factory.*;
 import pl.locon.demo.model.*;
 import pl.locon.demo.repository.*;
 
+import java.util.*;
+
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -100,6 +102,63 @@ public class BookServiceTest {
             .build();
 
     InvalidInputException exception = assertThrows(InvalidInputException.class, () -> bookService.addBook(bookToAdd));
+    assertThat(exception.getMessage()).isEqualTo("Invalid input");
+  }
+
+  @Test
+  public void testUpdateBook() {
+    Book bookToUpdate = Book.builder()
+            .id("1")
+            .title("NEW TITLE")
+            .author("NEW AUTHOR")
+            .build();
+
+    Book updatedBook = bookService.updateBook(bookToUpdate);
+
+    assertThat(updatedBook).isNotNull()
+            .extracting(Book::getId, Book::getTitle, Book::getAuthor)
+            .containsExactly("1", "NEW TITLE", "NEW AUTHOR");
+
+    Optional<BookEntity> updatedBookEntity = bookRepository.findById("1");
+    assertThat(updatedBookEntity).isPresent();
+    assertThat(updatedBookEntity.get())
+            .extracting(BookEntity::getId, BookEntity::getTitle, BookEntity::getAuthor)
+            .containsExactly("1", "NEW TITLE", "NEW AUTHOR");
+  }
+
+  @Test
+  public void testUpdateBookNotFound() {
+    Book bookToUpdate = Book.builder()
+            .id("99999")
+            .title("NEW TITLE")
+            .author("NEW AUTHOR")
+            .build();
+
+    EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> bookService.updateBook(bookToUpdate));
+    assertThat(exception.getMessage()).isEqualTo("Book not found");
+  }
+
+  @Test
+  public void testUpdateBookEmptyTitle() {
+    Book bookToUpdate = Book.builder()
+            .id("1")
+            .title("")
+            .author("NEW AUTHOR")
+            .build();
+
+    InvalidInputException exception = assertThrows(InvalidInputException.class, () -> bookService.updateBook(bookToUpdate));
+    assertThat(exception.getMessage()).isEqualTo("Invalid input");
+  }
+
+  @Test
+  public void testUpdateBookEmptyAuthor() {
+    Book bookToUpdate = Book.builder()
+            .id("1")
+            .title("NEW TITLE")
+            .author("")
+            .build();
+
+    InvalidInputException exception = assertThrows(InvalidInputException.class, () -> bookService.updateBook(bookToUpdate));
     assertThat(exception.getMessage()).isEqualTo("Invalid input");
   }
 }

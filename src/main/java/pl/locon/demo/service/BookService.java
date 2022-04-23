@@ -27,20 +27,46 @@ public class BookService {
   }
 
   public Book getBook(String id) {
-    BookEntity bookEntity = bookRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Book not found"));
+    BookEntity bookEntity = getBookEntity(id);
     return bookFactory.fromEntity(bookEntity);
   }
 
   public Book addBook(Book bookToAdd) {
-    validateBookInput(bookToAdd);
+    validateAddBookInput(bookToAdd);
     BookEntity savedBookEntity = bookRepository.save(bookFactory.toEntity(bookToAdd));
     return bookFactory.fromEntity(savedBookEntity);
   }
 
-  private void validateBookInput(Book bookToAdd) {
-    if (bookToAdd == null || !StringUtils.hasText(bookToAdd.getTitle()) || !StringUtils.hasText(bookToAdd.getAuthor())) {
+  public Book updateBook(Book bookToUpdate) {
+    validateUpdateBookInput(bookToUpdate);
+    BookEntity bookEntity = getBookEntity(bookToUpdate.getId());
+
+    bookEntity.setAuthor(bookToUpdate.getAuthor());
+    bookEntity.setTitle(bookToUpdate.getTitle());
+    BookEntity updatedBookEntity = bookRepository.save(bookEntity);
+
+    return bookFactory.fromEntity(updatedBookEntity);
+  }
+
+  private void validateAddBookInput(Book bookToAdd) {
+    if (bookToAdd == null ||
+            !StringUtils.hasText(bookToAdd.getTitle()) ||
+            !StringUtils.hasText(bookToAdd.getAuthor())) {
       throw new InvalidInputException();
     }
+  }
+
+  private void validateUpdateBookInput(Book bookToUpdate) {
+    if (bookToUpdate == null ||
+            !StringUtils.hasText(bookToUpdate.getId()) ||
+            !StringUtils.hasText(bookToUpdate.getTitle()) ||
+            !StringUtils.hasText(bookToUpdate.getAuthor())) {
+      throw new InvalidInputException();
+    }
+  }
+
+  private BookEntity getBookEntity(String id) {
+    return bookRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Book not found"));
   }
 }
