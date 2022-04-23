@@ -22,4 +22,10 @@ public class BookController {
   public ResponseEntity<Book> getBook(@PathVariable String bookId) {
     return ResponseEntity.ok(bookService.getBook(bookId));
   }
+
+  @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+          consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+  public ResponseEntity<Book> addBook(@RequestBody Book bookToAdd) {
+    return new ResponseEntity<>(bookService.addBook(bookToAdd), HttpStatus.CREATED);
+  }
 }

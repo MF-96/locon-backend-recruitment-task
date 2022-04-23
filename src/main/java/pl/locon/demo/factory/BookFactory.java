@@ -14,4 +14,11 @@ public class BookFactory {
             .author(bookEntity.getAuthor())
             .build();
   }
+
+  public BookEntity toEntity(Book book) {
+    return BookEntity.builder()
+            .author(book.getAuthor())
+            .title(book.getTitle())
+            .build();
+  }
 }

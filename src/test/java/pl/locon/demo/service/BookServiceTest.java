@@ -63,4 +63,43 @@ public class BookServiceTest {
 
     assertThat(exception.getMessage()).isEqualTo("Book not found");
   }
+
+  @Test
+  public void testAddBook() {
+    Book bookToAdd = Book.builder()
+            .title("TITLE")
+            .author("AUTHOR")
+            .build();
+
+    Book book = bookService.addBook(bookToAdd);
+
+    assertThat(book).isNotNull()
+            .extracting(Book::getTitle, Book::getAuthor)
+            .containsExactly("TITLE", "AUTHOR");
+    assertThat(book.getId()).isNotNull();
+
+    assertThat(bookRepository.findById(book.getId())).isPresent();
+  }
+
+  @Test
+  public void testAddBookFailEmptyTitle() {
+    Book bookToAdd = Book.builder()
+            .title("")
+            .author("AUTHOR")
+            .build();
+
+    InvalidInputException exception = assertThrows(InvalidInputException.class, () -> bookService.addBook(bookToAdd));
+    assertThat(exception.getMessage()).isEqualTo("Invalid input");
+  }
+
+  @Test
+  public void testAddBookFailEmptyAuthor() {
+    Book bookToAdd = Book.builder()
+            .title("TITLE")
+            .author("")
+            .build();
+
+    InvalidInputException exception = assertThrows(InvalidInputException.class, () -> bookService.addBook(bookToAdd));
+    assertThat(exception.getMessage()).isEqualTo("Invalid input");
+  }
 }

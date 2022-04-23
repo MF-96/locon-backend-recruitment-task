@@ -1,10 +1,12 @@
 package pl.locon.demo.controller;
 
+import com.fasterxml.jackson.databind.*;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.*;
 import org.springframework.boot.test.mock.mockito.*;
 import org.springframework.http.*;
+import org.springframework.http.converter.xml.*;
 import org.springframework.test.web.servlet.*;
 import org.springframework.test.web.servlet.request.*;
 import pl.locon.demo.dto.*;
@@ -24,6 +26,12 @@ public class BookControllerTest {
 
   @Autowired
   private MockMvc mockMvc;
+
+  @Autowired
+  private ObjectMapper objectMapper;
+
+  @Autowired
+  private MappingJackson2XmlHttpMessageConverter xmlMapper;
 
   @MockBean
   private BookService bookService;
@@ -121,5 +129,67 @@ public class BookControllerTest {
             .andExpect(status().isNotFound())
             .andExpect(result -> assertTrue(result.getResolvedException() instanceof EntityNotFoundException))
             .andExpect(result -> assertEquals(Objects.requireNonNull(result.getResolvedException()).getMessage(), "Book not found"));
+  }
+
+  @Test
+  public void testAddBookJsonResponse() throws Exception {
+    Book book = new Book("1", "TITLE 1", "AUTHOR 1");
+    when(bookService.addBook(any(Book.class))).thenReturn(book);
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/bookstore-web/book")
+                    .content(objectMapper.writeValueAsString(book))
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.id").value(1))
+            .andExpect(jsonPath("$.title").value("TITLE 1"))
+            .andExpect(jsonPath("$.author").value("AUTHOR 1"));
+  }
+
+  @Test
+  public void testAddBookXmlResponse() throws Exception {
+    Book book = new Book("1", "TITLE 1", "AUTHOR 1");
+    when(bookService.addBook(any(Book.class))).thenReturn(book);
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/bookstore-web/book")
+                    .content(xmlMapper.getObjectMapper().writeValueAsString(book))
+                    .contentType(MediaType.APPLICATION_XML_VALUE)
+                    .accept(MediaType.APPLICATION_XML_VALUE))
+            .andDo(print())
+            .andExpect(status().isCreated())
+            .andExpect(xpath("//Book/id").string("1"))
+            .andExpect(xpath("//Book/title").string("TITLE 1"))
+            .andExpect(xpath("//Book/author").string("AUTHOR 1"));
+  }
+
+  @Test
+  public void testAddBookFailEmptyTitle() throws Exception {
+    Book book = new Book("1", "", "AUTHOR 1");
+    when(bookService.addBook(any(Book.class))).thenThrow(new InvalidInputException());
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/bookstore-web/book")
+                    .content(objectMapper.writeValueAsString(book))
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isUnprocessableEntity())
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidInputException))
+            .andExpect(result -> assertEquals(Objects.requireNonNull(result.getResolvedException()).getMessage(), "Invalid input"));
+  }
+
+  @Test
+  public void testAddBookFailEmptyAuthor() throws Exception {
+    Book book = new Book("1", "TITLE 1", "");
+    when(bookService.addBook(any(Book.class))).thenThrow(new InvalidInputException());
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/bookstore-web/book")
+                    .content(objectMapper.writeValueAsString(book))
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andDo(print())
+            .andExpect(status().isUnprocessableEntity())
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidInputException))
+            .andExpect(result -> assertEquals(Objects.requireNonNull(result.getResolvedException()).getMessage(), "Invalid input"));
   }
 }

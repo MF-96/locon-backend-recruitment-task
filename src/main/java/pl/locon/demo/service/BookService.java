@@ -2,6 +2,7 @@ package pl.locon.demo.service;
 
 import lombok.*;
 import org.springframework.stereotype.*;
+import org.springframework.util.*;
 import pl.locon.demo.dto.*;
 import pl.locon.demo.exception.*;
 import pl.locon.demo.factory.*;
@@ -29,5 +30,17 @@ public class BookService {
     BookEntity bookEntity = bookRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Book not found"));
     return bookFactory.fromEntity(bookEntity);
+  }
+
+  public Book addBook(Book bookToAdd) {
+    validateBookInput(bookToAdd);
+    BookEntity savedBookEntity = bookRepository.save(bookFactory.toEntity(bookToAdd));
+    return bookFactory.fromEntity(savedBookEntity);
+  }
+
+  private void validateBookInput(Book bookToAdd) {
+    if (bookToAdd == null || !StringUtils.hasText(bookToAdd.getTitle()) || !StringUtils.hasText(bookToAdd.getAuthor())) {
+      throw new InvalidInputException();
+    }
   }
 }
