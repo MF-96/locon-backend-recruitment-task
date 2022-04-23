@@ -2,6 +2,7 @@ package pl.locon.demo.service;
 
 import lombok.*;
 import org.springframework.stereotype.*;
+import org.springframework.transaction.annotation.*;
 import org.springframework.util.*;
 import pl.locon.demo.dto.*;
 import pl.locon.demo.exception.*;
@@ -31,12 +32,14 @@ public class BookService {
     return bookFactory.fromEntity(bookEntity);
   }
 
+  @Transactional
   public Book addBook(Book bookToAdd) {
     validateAddBookInput(bookToAdd);
     BookEntity savedBookEntity = bookRepository.save(bookFactory.toEntity(bookToAdd));
     return bookFactory.fromEntity(savedBookEntity);
   }
 
+  @Transactional
   public Book updateBook(Book bookToUpdate) {
     validateUpdateBookInput(bookToUpdate);
     BookEntity bookEntity = getBookEntity(bookToUpdate.getId());
@@ -48,6 +51,7 @@ public class BookService {
     return bookFactory.fromEntity(updatedBookEntity);
   }
 
+  @Transactional
   public void deleteBook(String bookId) {
     BookEntity bookEntity = getBookEntity(bookId);
     bookRepository.delete(bookEntity);
