@@ -72,6 +72,6 @@ public class BookService {
 
   private BookEntity getBookEntity(String id) {
     return bookRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Book not found"));
+            .orElseThrow(BookNotFoundException::new);
   }
 }

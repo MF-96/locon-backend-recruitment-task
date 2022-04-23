@@ -61,7 +61,7 @@ public class BookServiceTest {
 
   @Test
   public void testGetBookNotFound() {
-    EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> bookService.getBook("999"));
+    BookNotFoundException exception = assertThrows(BookNotFoundException.class, () -> bookService.getBook("999"));
 
     assertThat(exception.getMessage()).isEqualTo("Book not found");
   }
@@ -134,7 +134,7 @@ public class BookServiceTest {
             .author("NEW AUTHOR")
             .build();
 
-    EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> bookService.updateBook(bookToUpdate));
+    BookNotFoundException exception = assertThrows(BookNotFoundException.class, () -> bookService.updateBook(bookToUpdate));
     assertThat(exception.getMessage()).isEqualTo("Book not found");
   }
 
@@ -171,7 +171,7 @@ public class BookServiceTest {
 
   @Test
   public void testDeleteBookNotFound() {
-    EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> bookService.deleteBook("999"));
+    BookNotFoundException exception = assertThrows(BookNotFoundException.class, () -> bookService.deleteBook("999"));
 
     assertThat(exception.getMessage()).isEqualTo("Book not found");
   }

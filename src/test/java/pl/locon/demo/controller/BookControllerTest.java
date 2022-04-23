@@ -121,13 +121,13 @@ public class BookControllerTest {
 
   @Test
   public void testGetBookNotFound() throws Exception {
-    when(bookService.getBook(any(String.class))).thenThrow(new EntityNotFoundException("Book not found"));
+    when(bookService.getBook(any(String.class))).thenThrow(new BookNotFoundException());
 
     mockMvc.perform(MockMvcRequestBuilders.get("/bookstore-web/book/1")
                     .accept(MediaType.APPLICATION_JSON_VALUE))
             .andDo(print())
             .andExpect(status().isNotFound())
-            .andExpect(result -> assertTrue(result.getResolvedException() instanceof EntityNotFoundException))
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof BookNotFoundException))
             .andExpect(result -> assertEquals(Objects.requireNonNull(result.getResolvedException()).getMessage(), "Book not found"));
   }
 
@@ -228,7 +228,7 @@ public class BookControllerTest {
   @Test
   public void testUpdateBookNotFound() throws Exception {
     Book book = new Book("9999", "NEW TITLE", "NEW AUTHOR");
-    when(bookService.updateBook(any(Book.class))).thenThrow(new EntityNotFoundException("Book not found"));
+    when(bookService.updateBook(any(Book.class))).thenThrow(new BookNotFoundException());
 
     mockMvc.perform(MockMvcRequestBuilders.put("/bookstore-web/book")
                     .content(objectMapper.writeValueAsString(book))
@@ -236,7 +236,7 @@ public class BookControllerTest {
                     .accept(MediaType.APPLICATION_JSON_VALUE))
             .andDo(print())
             .andExpect(status().isNotFound())
-            .andExpect(result -> assertTrue(result.getResolvedException() instanceof EntityNotFoundException))
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof BookNotFoundException))
             .andExpect(result -> assertEquals(Objects.requireNonNull(result.getResolvedException()).getMessage(), "Book not found"));
   }
 
@@ -279,12 +279,12 @@ public class BookControllerTest {
 
   @Test
   public void testDeleteBookNotFound() throws Exception {
-    doThrow(new EntityNotFoundException("Book not found")).when(bookService).deleteBook("999");
+    doThrow(new BookNotFoundException()).when(bookService).deleteBook("999");
 
     mockMvc.perform(MockMvcRequestBuilders.delete("/bookstore-web/book/999"))
             .andDo(print())
             .andExpect(status().isNotFound())
-            .andExpect(result -> assertTrue(result.getResolvedException() instanceof EntityNotFoundException))
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof BookNotFoundException))
             .andExpect(result -> assertEquals(Objects.requireNonNull(result.getResolvedException()).getMessage(), "Book not found"));
   }
 }
