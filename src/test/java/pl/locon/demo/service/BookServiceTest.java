@@ -161,4 +161,18 @@ public class BookServiceTest {
     InvalidInputException exception = assertThrows(InvalidInputException.class, () -> bookService.updateBook(bookToUpdate));
     assertThat(exception.getMessage()).isEqualTo("Invalid input");
   }
+
+  @Test
+  public void testDeleteBook() {
+    bookService.deleteBook("1");
+
+    assertThat(bookRepository.findById("1")).isNotPresent();
+  }
+
+  @Test
+  public void testDeleteBookNotFound() {
+    EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> bookService.deleteBook("999"));
+
+    assertThat(exception.getMessage()).isEqualTo("Book not found");
+  }
 }

@@ -48,6 +48,11 @@ public class BookService {
     return bookFactory.fromEntity(updatedBookEntity);
   }
 
+  public void deleteBook(String bookId) {
+    BookEntity bookEntity = getBookEntity(bookId);
+    bookRepository.delete(bookEntity);
+  }
+
   private void validateAddBookInput(Book bookToAdd) {
     if (bookToAdd == null ||
             !StringUtils.hasText(bookToAdd.getTitle()) ||

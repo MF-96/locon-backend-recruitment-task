@@ -269,4 +269,22 @@ public class BookControllerTest {
             .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidInputException))
             .andExpect(result -> assertEquals(Objects.requireNonNull(result.getResolvedException()).getMessage(), "Invalid input"));
   }
+
+  @Test
+  public void testDeleteBook() throws Exception {
+    mockMvc.perform(MockMvcRequestBuilders.delete("/bookstore-web/book/1"))
+            .andDo(print())
+            .andExpect(status().isNoContent());
+  }
+
+  @Test
+  public void testDeleteBookNotFound() throws Exception {
+    doThrow(new EntityNotFoundException("Book not found")).when(bookService).deleteBook("999");
+
+    mockMvc.perform(MockMvcRequestBuilders.delete("/bookstore-web/book/999"))
+            .andDo(print())
+            .andExpect(status().isNotFound())
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof EntityNotFoundException))
+            .andExpect(result -> assertEquals(Objects.requireNonNull(result.getResolvedException()).getMessage(), "Book not found"));
+  }
 }
